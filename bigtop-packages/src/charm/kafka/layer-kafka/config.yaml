@@ -8,3 +8,11 @@ options:
       interface (e.g., 'eth0'), or a CIDR range. If the latter, we\'ll
       bind to the first interface that we find with an IP address in
       that range.
+  enable_jmx:
+    default: false
+    type: boolean
+    description: |
+      When set to true, remote JMX will be enabled for Kafka. The JMX port is
+      fixed to 9999 and tied to the private IP address of the unit. This
+      protects the application from being externally manageable.
+      

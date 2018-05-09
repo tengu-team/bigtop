@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from os import environ
+
 from charmhelpers.core import hookenv
 from charms.layer.apache_bigtop_base import get_layer_opts, get_package_version
 from charms.layer.bigtop_kafka import Kafka
@@ -38,6 +40,18 @@ def configure_kafka(zk):
     hookenv.status_set('maintenance', 'setting up kafka')
     data_changed(  # Prime data changed for network interface
         'kafka.network_interface', hookenv.config().get('network_interface'))
+    if hookenv.config().get('enable_jmx'):
+        with open('/etc/environment', 'a') as env:
+            if 'JMX_PORT' not in environ.keys():
+                env.write('JMX_PORT=9999\n')
+            if 'KAFKA_JMX_OPTS' not in environ.keys():
+                jmx_opts = ('KAFKA_JMX_OPTS=" -Dcom.sun.management.jmxremote=true'
+                            + ' -Dcom.sun.management.jmxremote.authenticate=false'
+                            + ' -Dcom.sun.management.jmxremote.ssl=false'
+                            + ' -Djava.rmi.server.hostname={}'
+                            + ' -Djava.net.preferIPv4Stack=true"\n')
+                env.write(jmx_opts.format(hookenv.unit_private_ip()))
+        hookenv.open_port(9999)
     kafka = Kafka()
     zks = zk.zookeepers()
     kafka.configure_kafka(zks)
