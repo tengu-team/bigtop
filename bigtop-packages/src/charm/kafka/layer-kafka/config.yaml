@@ -15,4 +15,11 @@ options:
       When set to true, remote JMX will be enabled for Kafka. The JMX port is
       fixed to 9999 and tied to the private IP address of the unit. This
       protects the application from being externally manageable.
-      
+  enable_jolokia:
+    default: false
+    type: boolean
+    description: |
+      When set to true, it will set a Jolokia JVM agent for the Kafka process.
+      Jolokia is remote JMX with JSON over HTTP (https://jolokia.org/). A
+      default port will be set for the HTTP interface, 7777. This Jolokia agent
+      can for example be used to monitor Kafka with Telegraf.

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import wget
+
 from os import environ
 
 from charmhelpers.core import hookenv
@@ -52,6 +54,13 @@ def configure_kafka(zk):
                             + ' -Djava.net.preferIPv4Stack=true"\n')
                 env.write(jmx_opts.format(hookenv.unit_private_ip()))
         hookenv.open_port(9999)
+    if hookenv.config().get('enable_jolokia'):
+        wget.download(url='http://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-jvm/1.5.0/jolokia-jvm-1.5.0-agent.jar',
+                      out='/home/ubuntu/jolokia.jar')
+        with open('/etc/environment', 'a') as env:
+            if 'KAFKA_OPTS' not in environ.keys():
+                env.write('KAFKA_OPTS="-javaagent:/home/ubuntu/jolokia.jar=port=7777,host={}\n'.format(hookenv.unit_private_ip()))
+        hookenv.open_port(7777)
     kafka = Kafka()
     zks = zk.zookeepers()
     kafka.configure_kafka(zks)
